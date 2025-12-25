@@ -3,7 +3,7 @@ export const awardsByYear = {
     {
       name: "Abed Itani",
       role: "UI/UX Designer",
-      joinedDate: "2000-01-15",
+      joinedDate: "2025-01-15",
       id: "abed",
       customStats: [
         {

@@ -38,15 +38,20 @@ export default function ClientAwardPage({ year, person }) {
   const stats = useMemo(() => {
     const joinedDateRaw = person?.joinedDate;
     const joined = joinedDateRaw ? new Date(joinedDateRaw) : null;
-    const now = new Date();
 
-    const safeMs = joined && !Number.isNaN(joined.getTime()) ? now - joined : null;
+    const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+    const safeMsRaw =
+      joined && !Number.isNaN(joined.getTime()) ? endOfYear - joined : null;
+    const safeMs = safeMsRaw == null ? null : Math.max(0, safeMsRaw);
     const totalHours = safeMs == null ? null : Math.floor(safeMs / (1000 * 60 * 60));
     const totalDays = safeMs == null ? null : Math.floor(safeMs / (1000 * 60 * 60 * 24));
     const years = safeMs == null ? null : Math.floor(totalDays / 365);
+    const months = safeMs == null ? null : Math.floor(totalDays / 30.4375);
     const totalWeeks = safeMs == null ? null : safeMs / (1000 * 60 * 60 * 24 * 7);
     const workedHours =
       totalWeeks == null ? null : Math.floor(totalWeeks * 45);
+    const meetingsCount =
+      totalWeeks == null ? null : Math.floor(totalWeeks * 8);
 
     const awardsCount = getTotalAwards(person?.id);
     const longestTitle = awards.reduce(
@@ -61,14 +66,16 @@ export default function ClientAwardPage({ year, person }) {
       joined,
       joinedDateRaw,
       years,
+      months,
       totalDays,
       totalHours,
       workedHours,
+      meetingsCount,
       awardsCount,
       longestTitle,
       avgTitleLength,
     };
-  }, [awards, person]);
+  }, [awards, person, year]);
 
   const formatMmYyyy = (date) => {
     if (!date || Number.isNaN(date.getTime())) return "—";
@@ -355,23 +362,42 @@ export default function ClientAwardPage({ year, person }) {
                             <div className="space-y-6 md:space-y-8 h-full">
                               <div className="w-full h-2 md:h-3" />
                               <div className="space-y-2">
-                                <p className="text-xs text-neutral-400 uppercase tracking-[0.1em]">MAXIPHY | Wrapped.</p>
+                                <p className="text-xs text-neutral-400 uppercase tracking-[0.1em]">MAXIPHY {year} Wrapped</p>
                                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
                                   {person.name}
                                 </h2>
-                                <p className="text-sm sm:text-base text-neutral-300">Here's your numbers so far:</p>
+                                <p className="text-sm sm:text-base text-neutral-300">{person.role}</p>
                               </div>
 
                               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                 <div
-                                  className="rounded-2xl p-4"
+                                  className="relative rounded-2xl p-4"
                                   style={{
                                     backgroundColor: "#008DC1",
-                                    boxShadow:
-                                      "0 0 0 1px rgba(0,141,193,0.55), 0 0 26px rgba(0,141,193,0.28)",
                                   }}
                                 >
-                                  <p className="mt-2 text-2xl font-semibold text-white">{String(stats.awardsCount).padStart(1, "0")}</p>
+                                  <span className="absolute top-3 right-3 text-white/90">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <path d="M8 21h8" />
+                                      <path d="M12 17v4" />
+                                      <path d="M7 4h10" />
+                                      <path d="M17 4v8a5 5 0 0 1-10 0V4" />
+                                      <path d="M5 7h2" />
+                                      <path d="M17 7h2" />
+                                    </svg>
+                                  </span>
+                                  <p className="mt-2 text-2xl font-black text-white">{String(stats.awardsCount).padStart(1, "0")}</p>
                                   <p className="text-[11px] uppercase tracking-[0.1em] text-white/90">Awards</p>
                                   <p className="mt-1 text-xs text-white/80"></p>
                                 </div>
@@ -380,40 +406,138 @@ export default function ClientAwardPage({ year, person }) {
                                   <p className="mt-2 text-sm font-semibold text-white">{person.role}</p>
                                   <p className="mt-1 text-xs text-neutral-400">team impact category</p>
                                 </div> */}
-                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
-                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                <div className="relative rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <span className="absolute top-3 right-3 text-neutral-400">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <path d="M8 2v4" />
+                                      <path d="M16 2v4" />
+                                      <rect width="18" height="18" x="3" y="4" rx="2" />
+                                      <path d="M3 10h18" />
+                                    </svg>
+                                  </span>
+                                  <p className="mt-2 text-2xl font-black text-white">
                                     {stats.joined ? formatMmYyyy(stats.joined) : "—"}
                                   </p>
                                   <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">JOINED</p>
                                   <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
-                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
-                                  <p className="mt-2 text-2xl font-semibold text-white">
-                                    {stats.years != null ? stats.years.toLocaleString() : "—"}
+                                <div className="relative rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <span className="absolute top-3 right-3 text-neutral-400">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <circle cx="12" cy="12" r="10" />
+                                      <path d="M12 6v6l4 2" />
+                                    </svg>
+                                  </span>
+                                  <p className="mt-2 text-2xl font-black text-white">
+                                    {stats.years != null
+                                      ? stats.years < 1
+                                        ? stats.months != null
+                                          ? Math.max(0, stats.months).toLocaleString()
+                                          : "—"
+                                        : stats.years.toLocaleString()
+                                      : "—"}
                                   </p>
-                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Years</p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">
+                                    {stats.years != null && stats.years < 1 ? "Months" : "Years"}
+                                  </p>
                                   <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
-                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
-                                  <p className="mt-2 text-2xl font-semibold text-white">
-                                    {stats.totalDays != null ? stats.totalDays.toLocaleString() : "—"}
+                                <div className="relative rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <span className="absolute top-3 right-3 text-neutral-400">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <path d="M22 8l-6 4 6 4V8Z" />
+                                      <rect x="2" y="6" width="14" height="12" rx="2" />
+                                    </svg>
+                                  </span>
+                                  <p className="mt-2 text-2xl font-black text-white">
+                                    {stats.meetingsCount != null ? stats.meetingsCount.toLocaleString() : "—"}
                                   </p>
-                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Days</p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Meetings</p>
                                   <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
-                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
-                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                <div className="relative rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <span className="absolute top-3 right-3 text-neutral-400">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <rect x="3" y="7" width="18" height="13" rx="2" />
+                                      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                      <path d="M3 13h18" />
+                                    </svg>
+                                  </span>
+                                  <p className="mt-2 text-2xl font-black text-white">
                                     {stats.workedHours != null ? stats.workedHours.toLocaleString() : "—"}
                                   </p>
-                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">hours</p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">work hours</p>
                                   <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
 
                                 {(person.customStats ?? []).slice(0, 2).map((stat) => (
                                   <div
                                     key={stat.label}
-                                    className="rounded-2xl border border-neutral-800 bg-black/50 p-4"
+                                    className="relative rounded-2xl border border-neutral-800 bg-black/50 p-4"
                                   >
+                                    <span className="absolute top-3 right-3 text-neutral-400">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M4 9h16" />
+                                        <path d="M4 15h16" />
+                                        <path d="M10 3L8 21" />
+                                        <path d="M16 3l-2 18" />
+                                      </svg>
+                                    </span>
                                     <p className="mt-2 text-2xl font-semibold text-white">
                                       {typeof stat.value === "number"
                                         ? stat.value.toLocaleString()
@@ -484,7 +608,7 @@ export default function ClientAwardPage({ year, person }) {
                               </span>
                               <span>
                                 {i === 0
-                                  ? "STATS"
+                                  ? "WRAPPED"
                                   : `AWARD ${String(i).padStart(1, "0")} OF ${String(awards.length).padStart(1, "0")}`}
                               </span>
                             </div>
