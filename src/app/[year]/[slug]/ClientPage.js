@@ -162,7 +162,7 @@ export default function ClientAwardPage({ year, person }) {
 
   return (
     <main className="h-dvh bg-black text-white flex flex-col items-center overflow-hidden">
-      <div className="w-full max-w-screen-sm md:max-w-5xl flex flex-col h-full space-y-3">
+      <div className="w-full max-w-screen-sm md:max-w-md flex flex-col h-full space-y-3">
         <section className="flex-1 w-full flex flex-col gap-3 overflow-hidden min-h-0">
           <AnimatePresence mode="wait" initial={false}>
             {!started ? (
