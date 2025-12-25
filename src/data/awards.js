@@ -3,7 +3,15 @@ export const awardsByYear = {
     {
       name: "Abed Itani",
       role: "UI/UX Designer",
-      slug: "abed",
+      joinedDate: "2000-01-15",
+      id: "abed",
+      customStats: [
+        {
+          label: "Commits",
+          description: "",
+          value: 312,
+        },
+      ],
       awards: [
         {
           title: "The Meeting Time Traveler Award",
@@ -24,10 +32,21 @@ export const years = Object.keys(awardsByYear)
   .map(Number)
   .sort((a, b) => b - a);
 
-export function findPerson(year, slug) {
+export function findPerson(year, id) {
   const yearKey = String(year);
   const list = awardsByYear[yearKey];
   if (!list) return null;
-  const targetSlug = slug?.toLowerCase?.();
-  return list.find((p) => p.slug.toLowerCase() === targetSlug) || null;
+  const targetId = id?.toLowerCase?.();
+  return list.find((p) => p.id.toLowerCase() === targetId) || null;
+}
+
+export function getTotalAwards(id) {
+  const targetId = id?.toLowerCase?.();
+  if (!targetId) return 0;
+
+  return Object.values(awardsByYear).reduce((total, list) => {
+    const person = list.find((p) => p.id.toLowerCase() === targetId);
+    if (!person) return total;
+    return total + (person.awards?.length ?? 0);
+  }, 0);
 }

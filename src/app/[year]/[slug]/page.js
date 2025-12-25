@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 import { findPerson } from "@/data/awards";
-import { awardsByYear } from "@/data/awards";
 import ClientAwardPage from "./ClientPage";
 
 export async function generateMetadata({ params }) {
-  const { year, slug } = await params;
+  const { year, slug: id } = await params;
   const numericYear = Number(year);
-  const person = findPerson(numericYear, slug);
+  const person = findPerson(numericYear, id);
   if (!person) {
     return { title: "Not found | Maxiphy Awards" };
   }
@@ -17,9 +16,9 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function AwardPage({ params }) {
-  const { year, slug } = await params;
+  const { year, slug: id } = await params;
   const numericYear = Number(year);
-  const person = findPerson(numericYear, slug);
+  const person = findPerson(numericYear, id);
 
   if (!person) return notFound();
 

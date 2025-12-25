@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toPng } from "html-to-image";
 import Image from "next/image";
+import { getTotalAwards } from "@/data/awards";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -15,7 +16,66 @@ export default function ClientAwardPage({ year, person }) {
   const swiperRef = useRef(null);
 
   const awards = useMemo(() => person?.awards ?? [], [person]);
-  const current = awards[index] ?? awards[0];
+  const slides = useMemo(() => {
+    const statsSlide = { type: "stats" };
+    const awardSlides = awards.map((award) => ({ type: "award", award }));
+    return [statsSlide, ...awardSlides];
+  }, [awards]);
+
+  const activeSlide = slides[index] ?? slides[0];
+  const activeAward = activeSlide?.type === "award" ? activeSlide.award : null;
+
+  const updateActiveCardRef = (swiper) => {
+    const activeEl = swiper?.slides?.[swiper.activeIndex];
+    const card = activeEl?.querySelector?.("[data-award-card]") ?? null;
+    if (card) cardRef.current = card;
+  };
+
+  const goToNextSlide = () => {
+    swiperRef.current?.slideNext?.();
+  };
+
+  const stats = useMemo(() => {
+    const joinedDateRaw = person?.joinedDate;
+    const joined = joinedDateRaw ? new Date(joinedDateRaw) : null;
+    const now = new Date();
+
+    const safeMs = joined && !Number.isNaN(joined.getTime()) ? now - joined : null;
+    const totalHours = safeMs == null ? null : Math.floor(safeMs / (1000 * 60 * 60));
+    const totalDays = safeMs == null ? null : Math.floor(safeMs / (1000 * 60 * 60 * 24));
+    const years = safeMs == null ? null : Math.floor(totalDays / 365);
+    const totalWeeks = safeMs == null ? null : safeMs / (1000 * 60 * 60 * 24 * 7);
+    const workedHours =
+      totalWeeks == null ? null : Math.floor(totalWeeks * 45);
+
+    const awardsCount = getTotalAwards(person?.id);
+    const longestTitle = awards.reduce(
+      (acc, a) => (a.title.length > acc.length ? a.title : acc),
+      ""
+    );
+    const avgTitleLength = awardsCount
+      ? Math.round(awards.reduce((sum, a) => sum + a.title.length, 0) / awardsCount)
+      : 0;
+
+    return {
+      joined,
+      joinedDateRaw,
+      years,
+      totalDays,
+      totalHours,
+      workedHours,
+      awardsCount,
+      longestTitle,
+      avgTitleLength,
+    };
+  }, [awards, person]);
+
+  const formatMmYyyy = (date) => {
+    if (!date || Number.isNaN(date.getTime())) return "—";
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = String(date.getFullYear());
+    return `${mm}/${yyyy}`;
+  };
 
   const startSlideshow = () => {
     setStarted(true);
@@ -37,7 +97,10 @@ export default function ClientAwardPage({ year, person }) {
       style: { transform: "scale(1)" },
     });
     const link = document.createElement("a");
-    link.download = `${person.slug}-${year}-award.png`;
+    link.download =
+      activeSlide?.type === "stats"
+        ? `${person.id}-${year}-stats.png`
+        : `${person.id}-${year}-award-${String(index).padStart(1, "0")}.png`;
     link.href = dataUrl;
     link.click();
   };
@@ -46,7 +109,12 @@ export default function ClientAwardPage({ year, person }) {
     if (!cardRef.current) return;
 
     const title = `${person.name} | ${year} Maxiphy Awards`;
-    const text = `${current.title} – ${current.subtitle}`;
+    const text =
+      activeSlide?.type === "stats"
+        ? `Your Year, Wrapped — ${person.name}`
+        : activeAward
+          ? `${activeAward.title} – ${activeAward.subtitle}`
+          : `${person.name} — ${year} Maxiphy Awards`;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
 
     if (!navigator.share) {
@@ -62,7 +130,11 @@ export default function ClientAwardPage({ year, person }) {
     try {
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const file = new File([blob], `${person.slug}-${year}-award.png`, {
+      const filename =
+        activeSlide?.type === "stats"
+          ? `${person.id}-${year}-stats.png`
+          : `${person.id}-${year}-award-${String(index).padStart(1, "0")}.png`;
+      const file = new File([blob], filename, {
         type: "image/png",
       });
 
@@ -206,25 +278,30 @@ export default function ClientAwardPage({ year, person }) {
                         {person.name}
                       </h1>
                       <p className="text-neutral-400 text-sm sm:text-base">{person.role}</p>
+
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={startSlideshow}
+                        className="mt-5 h-11 px-7 rounded-full text-white transition text-sm font-medium"
+                        style={{
+                          backgroundColor: "#008DC1",
+                          boxShadow: "0 0 0 1px rgba(0,141,193,0.55), 0 0 26px rgba(0,141,193,0.28)",
+                        }}
+                      >
+                        START
+                      </motion.button>
                     </motion.div>
 
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.18, duration: 0.35, ease: "easeOut" }}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-center"
                     >
                       <span className="text-xs sm:text-sm text-neutral-500">
                         {String(awards.length).padStart(1, "0")} AWARDS
                       </span>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={startSlideshow}
-                        className="h-11 px-5 rounded-full border border-neutral-800 text-white hover:border-white transition text-sm font-medium"
-                      >
-                        Start
-                      </motion.button>
                     </motion.div>
                   </div>
                 </motion.div>
@@ -240,28 +317,33 @@ export default function ClientAwardPage({ year, person }) {
               >
                 <Swiper
                   modules={[Autoplay]}
-                  autoplay={{ delay: 5000, disableOnInteraction: false }}
+                  speed={900}
+                  autoplay={{ delay: 8000, disableOnInteraction: false }}
                   loop
                   onSwiper={(s) => {
                     swiperRef.current = s;
+                    updateActiveCardRef(s);
                   }}
-                  onSlideChange={(s) => setIndex(s.realIndex)}
-                  className="w-full h-full"
+                  onSlideChange={(s) => {
+                    setIndex(s.realIndex);
+                    updateActiveCardRef(s);
+                  }}
+                  className="award-swiper w-full h-full"
                 >
-                  {awards.map((award, i) => (
+                  {slides.map((slide, i) => (
                     <SwiperSlide
-                      key={award.title}
+                      key={slide.type === "stats" ? "stats" : slide.award.title}
                       className="flex items-center justify-center h-full p-3 md:p-6"
                     >
                       <motion.div
-                        key={`${started}-${award.title}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, ease: "easeOut" }}
+                        key={`${started}-${slide.type === "stats" ? "stats" : slide.award.title}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                         whileHover={{ scale: 1.005 }}
                         className="relative border border-neutral-800 rounded-3xl overflow-hidden bg-black shadow-2xl w-full max-w-[440px] md:max-w-[900px] h-full"
                         style={{ aspectRatio: "3 / 4" }}
-                        ref={i === index ? cardRef : null}
+                        data-award-card
                       >
                         <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/40 via-black to-black" />
                         <div className="relative h-full flex flex-col justify-between p-8 md:p-12">
@@ -269,51 +351,131 @@ export default function ClientAwardPage({ year, person }) {
                             <Image src="/logo.svg" alt="Maxiphy logo" width={110} height={28} priority />
                             <span className="text-neutral-200">{year} Office Awards</span>
                           </div>
-                          <div className="space-y-5 md:space-y-7 h-full">
-                            <div className="w-full h-2 md:h-3" />
-                            <div className="relative w-full aspect-square rounded-3xl border border-neutral-800 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 overflow-hidden">
-                              {award.image ? (
-                                <Image
-                                  src={award.image}
-                                  alt={award.title}
-                                  fill
-                                  sizes="(max-width: 768px) 100vw, 900px"
-                                  className="object-cover object-center scale-[1.03]"
+                          {slide.type === "stats" ? (
+                            <div className="space-y-6 md:space-y-8 h-full">
+                              <div className="w-full h-2 md:h-3" />
+                              <div className="space-y-2">
+                                <p className="text-xs text-neutral-400 uppercase tracking-[0.1em]">MAXIPHY | Wrapped.</p>
+                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
+                                  {person.name}
+                                </h2>
+                                <p className="text-sm sm:text-base text-neutral-300">Here's your numbers so far:</p>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                <div
+                                  className="rounded-2xl p-4"
                                   style={{
-                                    objectFit: "cover",
-                                    objectPosition: "center",
-                                    transform: "scale(1.03)",
+                                    backgroundColor: "#008DC1",
+                                    boxShadow:
+                                      "0 0 0 1px rgba(0,141,193,0.55), 0 0 26px rgba(0,141,193,0.28)",
                                   }}
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-neutral-500 text-xs uppercase tracking-[0.1em]">
-                                    Award Image
-                                  </span>
+                                >
+                                  <p className="mt-2 text-2xl font-semibold text-white">{String(stats.awardsCount).padStart(1, "0")}</p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-white/90">Awards</p>
+                                  <p className="mt-1 text-xs text-white/80"></p>
                                 </div>
-                              )}
-                            </div>
-                            <AnimatePresence mode="wait" initial={false}>
-                              <motion.div
-                                key={award.title}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -8 }}
-                                transition={{ duration: 0.3, ease: "easeOut" }}
-                                className="space-y-5 md:space-y-7 text-left mt-auto"
-                              >
-                                <div className="space-y-2">
-                                  <p className="text-xs text-neutral-400 uppercase">2025 office Award</p>
-                                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
-                                    {award.title}
-                                  </h2>
-                                  <p className="text-sm sm:text-base md:text-lg text-neutral-300 max-w-2xl">
-                                    {award.subtitle}
+                                {/* <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Role</p>
+                                  <p className="mt-2 text-sm font-semibold text-white">{person.role}</p>
+                                  <p className="mt-1 text-xs text-neutral-400">team impact category</p>
+                                </div> */}
+                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                    {stats.joined ? formatMmYyyy(stats.joined) : "—"}
                                   </p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">JOINED</p>
+                                  <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
-                              </motion.div>
-                            </AnimatePresence>
-                          </div>
+                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                    {stats.years != null ? stats.years.toLocaleString() : "—"}
+                                  </p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Years</p>
+                                  <p className="mt-1 text-xs text-neutral-400"></p>
+                                </div>
+                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                    {stats.totalDays != null ? stats.totalDays.toLocaleString() : "—"}
+                                  </p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">Days</p>
+                                  <p className="mt-1 text-xs text-neutral-400"></p>
+                                </div>
+                                <div className="rounded-2xl border border-neutral-800 bg-black/50 p-4">
+                                  <p className="mt-2 text-2xl font-semibold text-white">
+                                    {stats.workedHours != null ? stats.workedHours.toLocaleString() : "—"}
+                                  </p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">hours</p>
+                                  <p className="mt-1 text-xs text-neutral-400"></p>
+                                </div>
+
+                                {(person.customStats ?? []).slice(0, 2).map((stat) => (
+                                  <div
+                                    key={stat.label}
+                                    className="rounded-2xl border border-neutral-800 bg-black/50 p-4"
+                                  >
+                                    <p className="mt-2 text-2xl font-semibold text-white">
+                                      {typeof stat.value === "number"
+                                        ? stat.value.toLocaleString()
+                                        : stat.value ?? "—"}
+                                    </p>
+                                    <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">
+                                      {stat.label}
+                                    </p>
+                                    {stat.description ? (
+                                      <p className="mt-1 text-xs text-neutral-400">{stat.description}</p>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-5 md:space-y-7 h-full">
+                              <div className="w-full h-2 md:h-3" />
+                              <div className="relative w-full aspect-square rounded-3xl border border-neutral-800 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 overflow-hidden">
+                                {slide.award.image ? (
+                                  <Image
+                                    src={slide.award.image}
+                                    alt={slide.award.title}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 900px"
+                                    className="object-cover object-center scale-[1.03]"
+                                    style={{
+                                      objectFit: "cover",
+                                      objectPosition: "center",
+                                      transform: "scale(1.03)",
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-neutral-500 text-xs uppercase tracking-[0.1em]">
+                                      Award Image
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                  key={slide.award.title}
+                                  initial={{ opacity: 0, y: 8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -8 }}
+                                  transition={{ duration: 0.3, ease: "easeOut" }}
+                                  className="space-y-5 md:space-y-7 text-left mt-auto"
+                                >
+                                  <div className="space-y-2">
+                                    <p className="text-xs text-neutral-400 uppercase">2025 office Award</p>
+                                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
+                                      {slide.award.title}
+                                    </h2>
+                                    <p className="text-sm sm:text-base md:text-lg text-neutral-300 max-w-2xl">
+                                      {slide.award.subtitle}
+                                    </p>
+                                  </div>
+                                </motion.div>
+                              </AnimatePresence>
+                            </div>
+                          )}
 
                           <div className="flex items-center justify-between text-[12px] sm:text-sm text-neutral-500">
                             <div className="flex flex-col gap-0.5">
@@ -321,8 +483,9 @@ export default function ClientAwardPage({ year, person }) {
                                 {person.name} · {person.role}
                               </span>
                               <span>
-                                AWARD {String(index + 1).padStart(1, "0")} OF {" "}
-                                {String(awards.length).padStart(1, "0")}
+                                {i === 0
+                                  ? "STATS"
+                                  : `AWARD ${String(i).padStart(1, "0")} OF ${String(awards.length).padStart(1, "0")}`}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -359,6 +522,28 @@ export default function ClientAwardPage({ year, person }) {
                                   <line x1="12" y1="15" x2="12" y2="3" />
                                 </svg>
                               </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={goToNextSlide}
+                                aria-label="Next slide"
+                                className="h-10 w-10 rounded-full border border-neutral-800 text-white flex items-center justify-center text-base hover:border-white transition"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                              </motion.button>
                             </div>
                           </div>
                         </div>
@@ -366,6 +551,22 @@ export default function ClientAwardPage({ year, person }) {
                     </SwiperSlide>
                   ))}
                 </Swiper>
+
+                <style jsx global>{`
+                  .award-swiper .swiper-slide {
+                    opacity: 0;
+                    transition: opacity 650ms ease;
+                  }
+
+                  .award-swiper .swiper-slide-active {
+                    opacity: 1;
+                  }
+
+                  .award-swiper .swiper-slide-prev,
+                  .award-swiper .swiper-slide-next {
+                    opacity: 0.25;
+                  }
+                `}</style>
               </motion.div>
             )}
           </AnimatePresence>

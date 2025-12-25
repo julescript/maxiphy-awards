@@ -47,8 +47,8 @@ export default function Home() {
               <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                 {awardsByYear[year].map((person) => (
                   <Link
-                    key={person.slug}
-                    href={`/${year}/${person.slug}`}
+                    key={person.id}
+                    href={`/${year}/${person.id}`}
                     className="group relative border border-neutral-800 rounded-2xl overflow-hidden bg-black/60 hover:border-white transition"
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/40 via-black to-black" />
