@@ -15,6 +15,30 @@ export default function ClientAwardPage({ year, person }) {
   const cardRef = useRef(null);
   const swiperRef = useRef(null);
 
+  const parseJoinedDate = (raw) => {
+    if (!raw || typeof raw !== "string") return null;
+    const s = raw.trim();
+    if (!s) return null;
+
+    const iso = /^\d{4}-\d{2}-\d{2}$/;
+    const dmy = /^\d{2}-\d{2}-\d{4}$/;
+
+    if (iso.test(s)) {
+      const [yyyy, mm, dd] = s.split("-").map((n) => Number(n));
+      const dt = new Date(yyyy, mm - 1, dd);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+
+    if (dmy.test(s)) {
+      const [dd, mm, yyyy] = s.split("-").map((n) => Number(n));
+      const dt = new Date(yyyy, mm - 1, dd);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+
+    const fallback = new Date(s);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  };
+
   const awards = useMemo(() => person?.awards ?? [], [person]);
   const slides = useMemo(() => {
     const statsSlide = { type: "stats" };
@@ -37,7 +61,7 @@ export default function ClientAwardPage({ year, person }) {
 
   const stats = useMemo(() => {
     const joinedDateRaw = person?.joinedDate;
-    const joined = joinedDateRaw ? new Date(joinedDateRaw) : null;
+    const joined = parseJoinedDate(joinedDateRaw);
 
     const workHoursPerWeek =
       typeof person?.workHoursPerWeek === "number" ? person.workHoursPerWeek : 45;
