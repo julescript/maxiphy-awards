@@ -181,11 +181,6 @@ export const awardsByYear = {
           image: "/icons/icon-4-2.jpg",
         },
         {
-          title: "The Premature CEO Hair Award",
-          subtitle: "Turned white early from pure responsibility and stress.",
-          image: "/icons/icon-4-3.jpg",
-        },
-        {
           title: "The NPC Outfit Award",
           subtitle: "Same white or black shirt every day. Different crisis.",
           image: "/icons/icon-4-4.jpg",

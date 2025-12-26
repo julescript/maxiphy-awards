@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "optimize:icons": "oxipng -o 4 --strip all -r public/icons",
-    "optimize:icons:jpeg": "mkdir -p public/icons_jpeg_tmp && for f in public/icons_png_backup/*.jpg; do out=\"public/icons_jpeg_tmp/$(basename \"$f\")\"; sips -s format jpeg -s formatOptions 90 \"$f\" --out \"$out\" >/dev/null; done && rm -f public/icons/*.jpg && mv public/icons_jpeg_tmp/*.jpg public/icons/ && rmdir public/icons_jpeg_tmp"
+    "optimize:icons:jpeg": "mkdir -p public/icons_jpeg_tmp && for f in public/icons_png_backup/*.jpg; do out=\"public/icons_jpeg_tmp/$(basename \"$f\")\"; sips -s format jpeg -s formatOptions 90 \"$f\" --out \"$out\" >/dev/null; done && rm -f public/icons/*.jpg && mv public/icons_jpeg_tmp/*.jpg public/icons/ && rmdir public/icons_jpeg_tmp",
+    "generate:icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
+    "@google/genai": "^1.34.0",
     "framer-motion": "^11.18.2",
     "html-to-image": "^1.11.13",
     "next": "16.1.1",
