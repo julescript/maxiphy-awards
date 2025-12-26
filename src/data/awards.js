@@ -49,16 +49,6 @@ export const awardsByYear = {
           subtitle: "Everything is perfectly structured—except his schedule and ethics.",
           image: "/icons/icon-1-8.jpg",
         },
-        {
-          title: "The Design God, Moral Liability Award",
-          subtitle: "Amazing UI/UX. Absolute HR nightmare.",
-          image: "/icons/icon-1-9.jpg",
-        },
-        {
-          title: "The Modern-Day Tech Plantation Owner Award",
-          subtitle: "Interns fear him. Developers respect him. HR doesn’t exist.",
-          image: "/icons/icon-1-10.jpg",
-        },
       ],
     },
 
@@ -73,7 +63,7 @@ export const awardsByYear = {
       awards: [
         {
           title: "The ‘This Will Never Go to Production’ Award",
-          subtitle: "Builds masterpieces doomed to live forever in staging.",
+          subtitle: "Builds masterpieces doomed to live forever in staging (we might ship a fake app to keep him alive).",
           image: "/icons/icon-2-1.jpg",
         },
         {
@@ -112,11 +102,6 @@ export const awardsByYear = {
           image: "/icons/icon-2-8.jpg",
         },
         {
-          title: "The Fake App Survival Award",
-          subtitle: "We might ship a fake app just to keep his hope alive.",
-          image: "/icons/icon-2-9.jpg",
-        },
-        {
           title: "The ‘Almost Died But Finished Anyway’ Award",
           subtitle: "Hannibal race. Broken ankle. We thought he was dead. He kept going.",
           image: "/icons/icon-2-10.jpg",
@@ -134,14 +119,9 @@ export const awardsByYear = {
       customStats: [{ label: "Beers", description: "", value: 9999 }],
       awards: [
         {
-          title: "The ‘Works Better Drunk’ Award",
-          subtitle: "Performance improves with alcohol. Science refuses to comment.",
-          image: "/icons/icon-3-1.jpg",
-        },
-        {
           title: "The Beer-Powered Engineer Award",
-          subtitle: "Could be paid in IPAs if maxiphy ever goes under.",
-          image: "/icons/icon-3-2.jpg",
+          subtitle: "Somehow performs better with alcohol. Legal tender optional.",
+          image: "/icons/icon-3-1.jpg",
         },
         {
           title: "The Nocturnal Developer Award",
@@ -177,11 +157,6 @@ export const awardsByYear = {
           title: "The Questionable Likes Award",
           subtitle: "Instagram activity currently under internal investigation.",
           image: "/icons/icon-3-9.jpg",
-        },
-        {
-          title: "The ‘If We Go Bankrupt, You’re Fine’ Award",
-          subtitle: "Legal tender optional. Beer accepted.",
-          image: "/icons/icon-3-10.jpg",
         },
       ],
     },
@@ -231,18 +206,13 @@ export const awardsByYear = {
           image: "/icons/icon-4-7.jpg",
         },
         {
-          title: "The Client Whisperer Award",
-          subtitle: "Defuses short-fuse clients before Julien commits career suicide.",
-          image: "/icons/icon-4-8.jpg",
-        },
-        {
           title: "The ‘I Told You So’ Award",
           subtitle: "Always late. Always correct. Always annoying about it.",
           image: "/icons/icon-4-9.jpg",
         },
         {
           title: "The Human Firewall Award",
-          subtitle: "Protects maxiphy from clients, bad decisions, and Julien’s optimism.",
+          subtitle: "Defuses short-fuse clients and blocks disasters before they reach Julien.",
           image: "/icons/icon-4-10.jpg",
         },
       ],
