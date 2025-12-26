@@ -39,6 +39,11 @@ export default function ClientAwardPage({ year, person }) {
     const joinedDateRaw = person?.joinedDate;
     const joined = joinedDateRaw ? new Date(joinedDateRaw) : null;
 
+    const workHoursPerWeek =
+      typeof person?.workHoursPerWeek === "number" ? person.workHoursPerWeek : 45;
+    const meetingsPerWeek =
+      typeof person?.meetingsPerWeek === "number" ? person.meetingsPerWeek : 8;
+
     const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
     const safeMsRaw =
       joined && !Number.isNaN(joined.getTime()) ? endOfYear - joined : null;
@@ -49,9 +54,9 @@ export default function ClientAwardPage({ year, person }) {
     const months = safeMs == null ? null : Math.floor(totalDays / 30.4375);
     const totalWeeks = safeMs == null ? null : safeMs / (1000 * 60 * 60 * 24 * 7);
     const workedHours =
-      totalWeeks == null ? null : Math.floor(totalWeeks * 45);
+      totalWeeks == null ? null : Math.floor(totalWeeks * workHoursPerWeek);
     const meetingsCount =
-      totalWeeks == null ? null : Math.floor(totalWeeks * 8);
+      totalWeeks == null ? null : Math.floor(totalWeeks * meetingsPerWeek);
 
     const awardsCount = getTotalAwards(person?.id);
     const longestTitle = awards.reduce(
