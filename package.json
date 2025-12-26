@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "optimize:icons": "oxipng -o 4 --strip all -r public/icons",
+    "optimize:icons:jpeg": "mkdir -p public/icons_jpeg_tmp && for f in public/icons_png_backup/*.jpg; do out=\"public/icons_jpeg_tmp/$(basename \"$f\")\"; sips -s format jpeg -s formatOptions 90 \"$f\" --out \"$out\" >/dev/null; done && rm -f public/icons/*.jpg && mv public/icons_jpeg_tmp/*.jpg public/icons/ && rmdir public/icons_jpeg_tmp"
   },
   "dependencies": {
-    "html-to-image": "^1.11.13",
     "framer-motion": "^11.18.2",
+    "html-to-image": "^1.11.13",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -20,6 +22,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "oxipng-bin": "^1.0.0",
     "tailwindcss": "^4",
     "typescript": "^5.9.3"
   }
