@@ -515,7 +515,7 @@ export default function ClientAwardPage({ year, person }) {
                                   <p className="mt-2 text-2xl font-black text-white">
                                     {stats.workedHours != null ? stats.workedHours.toLocaleString() : "—"}
                                   </p>
-                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">work hours</p>
+                                  <p className="text-[11px] uppercase tracking-[0.1em] text-neutral-500">worked hours</p>
                                   <p className="mt-1 text-xs text-neutral-400"></p>
                                 </div>
 
