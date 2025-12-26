@@ -6,7 +6,6 @@ import { toPng } from "html-to-image";
 import Image from "next/image";
 import { getTotalAwards } from "@/data/awards";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
 export default function ClientAwardPage({ year, person }) {
@@ -121,7 +120,6 @@ export default function ClientAwardPage({ year, person }) {
       const swiper = swiperRef.current;
       if (!swiper) return;
       swiper.slideToLoop?.(0, 0);
-      swiper.autoplay?.start?.();
     });
   };
 
@@ -352,9 +350,7 @@ export default function ClientAwardPage({ year, person }) {
                 className="w-full h-full flex-1 min-h-0 flex"
               >
                 <Swiper
-                  modules={[Autoplay]}
                   speed={900}
-                  autoplay={{ delay: 8000, disableOnInteraction: false }}
                   loop
                   onSwiper={(s) => {
                     swiperRef.current = s;
