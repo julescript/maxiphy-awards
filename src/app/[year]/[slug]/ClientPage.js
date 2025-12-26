@@ -38,6 +38,50 @@ export default function ClientAwardPage({ year, person }) {
     return Number.isNaN(fallback.getTime()) ? null : fallback;
   };
 
+  const waitForCardImages = async (el) => {
+    if (!el) return;
+    const imgs = Array.from(el.querySelectorAll("img"));
+    if (!imgs.length) return;
+
+    const timeoutMs = 2500;
+    const timeout = new Promise((resolve) => setTimeout(resolve, timeoutMs));
+
+    const done = Promise.all(
+      imgs.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+
+        return new Promise((resolve) => {
+          const cleanup = () => {
+            img.removeEventListener("load", onLoad);
+            img.removeEventListener("error", onLoad);
+          };
+          const onLoad = () => {
+            cleanup();
+            resolve();
+          };
+
+          img.addEventListener("load", onLoad, { once: true });
+          img.addEventListener("error", onLoad, { once: true });
+        });
+      })
+    );
+
+    await Promise.race([done, timeout]);
+
+    await Promise.race([
+      Promise.all(
+        imgs.map(async (img) => {
+          try {
+            await img.decode?.();
+          } catch {
+            // ignore
+          }
+        })
+      ),
+      timeout,
+    ]);
+  };
+
   const awards = useMemo(() => person?.awards ?? [], [person]);
   const slides = useMemo(() => {
     const statsSlide = { type: "stats" };
@@ -125,6 +169,9 @@ export default function ClientAwardPage({ year, person }) {
 
   const downloadImage = async () => {
     if (!cardRef.current) return;
+
+    await waitForCardImages(cardRef.current);
+
     const dataUrl = await toPng(cardRef.current, {
       cacheBust: true,
       pixelRatio: 2,
@@ -155,6 +202,8 @@ export default function ClientAwardPage({ year, person }) {
       await downloadImage();
       return;
     }
+
+    await waitForCardImages(cardRef.current);
 
     const dataUrl = await toPng(cardRef.current, {
       cacheBust: true,
@@ -588,6 +637,9 @@ export default function ClientAwardPage({ year, person }) {
                                     alt={slide.award.title}
                                     fill
                                     sizes="(max-width: 768px) 100vw, 900px"
+                                    unoptimized={slide.award.image?.startsWith("/icons/")}
+                                    loading="eager"
+                                    crossOrigin="anonymous"
                                     className="object-cover object-center scale-[1.03]"
                                     style={{
                                       objectFit: "cover",
