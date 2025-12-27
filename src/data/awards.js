@@ -1,7 +1,7 @@
 export const awardsByYear = {
   "2025": [
     {
-      name: "Abed Itani",
+      name: "Abed",
       role: "UI/UX Designer",
       joinedDate: "01-11-2023",
       id: "abed",
@@ -214,7 +214,7 @@ export const awardsByYear = {
     },
 
     {
-      name: "Julien Hosri",
+      name: "Julien",
       role: "Creative Managing Partner",
       joinedDate: "01-01-2022",
       id: "julien",
